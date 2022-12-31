@@ -5675,11 +5675,7 @@
 	]
 ]
 
-<<<<<<< Updated upstream
-@PointClass base(Targetname, Angles) studio("models/props_combine/coreball.mdl") = prop_coreball: "Core Ball. Truly the stuff of nightmares..." 
-=======
 @PointClass base(Targetname, Angles) studio("models/props_combine/coreball.mdl") = prop_coreball: "Core Ball." 
->>>>>>> Stashed changes
 [
 	input SetScaleX(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
 	input SetScaleY(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
