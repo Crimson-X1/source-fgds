@@ -37,8 +37,8 @@
 
 @BaseClass = Angles
 [ 
-	angles(angle) : "Pitch Yaw Roll (Y Z X)" : "0 0 0" : "This entity's orientation in the world. Pitch is rotation around the Y axis, " +
-		"yaw is the rotation around the Z axis, roll is the rotation around the X axis."
+	angles(angle) : "Pitch Yaw Roll (Y Z X)" : "0 0 0" : "This entity's orientation in the world. Pitch is rotation around the Y (green) axis, " +
+		"yaw is the rotation around the Z (blue) axis, roll is the rotation around the X (red) axis."
 		
 	input SetLocalAngles(vector) : "Set this entity's angles in local space, relative to its parent if one exists. Otherwise relative to the world."
 	input SetAbsAngles(vector) : "Set this entity's angles, always relative to the world origin."
@@ -3155,8 +3155,8 @@
 	output UnpressedSprint(void) : "Fired whenever the player releases the sprint key."
 	output UnpressedReload(void) : "Fired whenever the player releases the reload key."
 
-	output XAxis(string) : "An output that fires whenever the X axis of the player's input changes. i.e. -1 when the player has moveleft key down, 1 when the player has moveright key down, and 0 if neither."
-	output YAxis(string) : "An output that fires whenever the Y axis of the player's input changes. i.e. -1 when the player has backward key down, 1 when the player has forward key down, and 0 if neither."
+	output XAxis(string) : "An output that fires whenever the X (red) axis of the player's input changes. i.e. -1 when the player has moveleft key down, 1 when the player has moveright key down, and 0 if neither."
+	output YAxis(string) : "An output that fires whenever the Y (green) axis of the player's input changes. i.e. -1 when the player has backward key down, 1 when the player has forward key down, and 0 if neither."
 	output AttackAxis(string) : "An output that fires whenever the state of the player's attack key changes. i.e. 1 when the player has the attack key down, 0 otherwise."
 	output Attack2Axis(string) : "An output that fires whenever the state of the player's secondary attack key changes. i.e. 1 when the player has the secondary attack key down, 0 otherwise."
 ]
@@ -3778,7 +3778,7 @@
 @PointClass base(Targetname, Angles) iconsprite("editor/shadow_control.vmt") = shadow_control : 
 	"An entity to control the shadows in the map."
 [
-	angles(angle) : "Pitch Yaw Roll (Y Z X)" : "80 30 0" : "This is the shadow direction. Pitch is rotation around the Y axis, yaw is the rotation around the Z axis, and roll is the rotation around the X axis."
+	angles(angle) : "Pitch Yaw Roll (Y Z X)" : "80 30 0" : "This is the shadow direction. Pitch is rotation around the Y (green) axis, yaw is the rotation around the Z (blue) axis, and roll is the rotation around the X (red) axis."
 
 	color(color255) : "Shadow Color" : "128 128 128" : "This is the color of the shadows."
 	distance(float) : "Maximum Distance" : 75 : "This is the maximum distance the shadow is allowed to cast, in units."
@@ -4248,7 +4248,7 @@
 ]
 
 @SolidClass base(Targetname, Parentname, Origin, Angles, Global, Button, EnableDisable) = func_rot_button : 
-	"A brush entity that's designed to be used for a rotating player-useable button. When used by the player, it rotates to a pressed position."
+	"A brush entity that's designed to be used for a rotating player-useable button. When used by the player, it rotates around the Z (blue) axis to a pressed position."
 [
 	//master(target_destination) : "Master (Obsolete)" : : "Legacy support: The name of a master entity. If the master hasn't been activated, this button cannot be used."
 	speed(integer) : "Speed" : 50 : "The speed that the button rotates, in degrees per second."
@@ -4270,8 +4270,8 @@
 		1 : "[1] Not solid" : 0
 		2 : "[2] Reverse Dir" : 0
 		32: "[32] Toggle" : 0
-		64: "[64] X Axis" : 0
-		128: "[128] Y Axis" : 0
+		64: "[64] X (red) Axis" : 0
+		128: "[128] Y (green) Axis" : 0
 		256: "[256] Touch Activates": 0
 		512: "[512] Damage Activates": 0
 		1024: "[1024] Use Activates": 0
@@ -4309,8 +4309,8 @@
 	[
 		1: "[1] Not Solid" : 1
 		32: "[32] Toggle (Disable Auto Return)" : 1
-		64: "[64] X Axis" : 0
-		128: "[128] Y Axis" : 0
+		64: "[64] X (red) Axis" : 0
+		128: "[128] Y (green) Axis" : 0
 		1024: "[1024] Use Activates" : 1
 		2048: "[2048] Starts locked" : 0
 		8192: "[8192] Jiggle when used while locked" : 0
@@ -4463,8 +4463,8 @@
 	[
 		2 : "[2] Reverse Dir" : 0
 		16: "[16] One-way" : 0
-		64: "[64] X Axis" : 0
-		128: "[128] Y Axis" : 0
+		64: "[64] X (red) Axis" : 0
+		128: "[128] Y (green) Axis" : 0
 		65536: "[65536] New func_door +USE rules (NOT for prop_doors!!)" : 0
 	]
 	distance(integer) : "Distance" : 90 : "The amount, in degrees, that the button should rotate when it's pressed."
@@ -7535,15 +7535,15 @@
 		2: "[2] Only limit rotation (free movement)" : 0
 	]
 
-	xmin(float) : "X axis min limit" : "-90" : "-180 min and 180 max = no constraint on this axis."
-	xmax(float) : "X axis max limit" : "90" : "-180 min and 180 max = no constraint on this axis."
-	ymin(float) : "Y axis min limit" : "0" : "-180 min and 180 max = no constraint on this axis."
-	ymax(float) : "Y axis max limit" : "0" : "-180 min and 180 max = no constraint on this axis."
-	zmin(float) : "Z axis min limit" : "0" : "-180 min and 180 max = no constraint on this axis."
-	zmax(float) : "Z axis max limit" : "0" : "-180 min and 180 max = no constraint on this axis."
-	xfriction(float) : "X axis friction" : "0"
-	yfriction(float) : "Y axis friction" : "0"
-	zfriction(float) : "Z axis friction" : "0"
+	xmin(float) : "X (red) axis min limit" : "-90" : "-180 min and 180 max = no constraint on this axis."
+	xmax(float) : "X (red) axis max limit" : "90" : "-180 min and 180 max = no constraint on this axis."
+	ymin(float) : "Y (green) axis min limit" : "0" : "-180 min and 180 max = no constraint on this axis."
+	ymax(float) : "Y (green) axis max limit" : "0" : "-180 min and 180 max = no constraint on this axis."
+	zmin(float) : "Z (blue) axis min limit" : "0" : "-180 min and 180 max = no constraint on this axis."
+	zmax(float) : "Z (blue) axis max limit" : "0" : "-180 min and 180 max = no constraint on this axis."
+	xfriction(float) : "X (red) axis friction" : "0"
+	yfriction(float) : "Y (green) axis friction" : "0"
+	zfriction(float) : "Z (blue) axis friction" : "0"
 ]
 
 @PointClass base(Targetname) size(-8 -8 -8, 8 8 8) color(0 0 255) = phys_convert : 
@@ -7920,6 +7920,11 @@
 	forcetoenablemotion(float) : "Physics Impact Force to Override Motion" : 0 : "If specified, this object will start motion disabled. Any impact that imparts a force greater than this value on the physbox will enable motion."
 	
 	puntsound(sound) : "Sound to make when punted"
+	
+	// Custom keyfields
+	canDissolve(bool) : "Dissolvable?" : "1" : "Determines whether this object can be vaporized. Only relevant for map logic."
+	isMetallic(bool) : "Is Metallic" : "0" : "Sets whether the object is affected by magnets. Only relevant for map logic."
+	noAntiGravity(bool) : "Disable Anti-Gravity" : "0" : "Prevents the object from becoming weightless. Only relevant for map logic."
 
 	// Inputs
 	input Wake(void) : "Wake up this physics object, if it is sleeping."
@@ -7961,7 +7966,7 @@
 		"2": "2 : When punted: Paint surfaces (paint cans)"
 		"3": "3 : When punted: Impale (harpoons)"
 		"4": "4 : When punted: Don't spin"
-		"5": "5 : When punted: Spin on Z axis (sawblades, propellers)"
+		"5": "5 : When punted: Spin on Z (blue) axis (sawblades, propellers)"
 		"6": "6 : When broken: Gas explosion (propane tanks, gas cans)"
 		"7": "7 : When punted: No damage on impact"
 		"8": "8 : Fire: Flammable"
@@ -8331,8 +8336,8 @@
 		2: "[2] Relink track" : 0
 		8: "[8] Start at Bottom" : 0
 		16: "[16] Rotate Only" : 0
-		64: "[64] X Axis" : 0
-		128: "[128] Y Axis" : 0
+		64: "[64] X (red) Axis" : 0
+		128: "[128] Y (green) Axis" : 0
 	]
 	rotation(integer) : "Spin amount" : 0 : "The amount this platform should rotate as it moves, in degrees."
 	train(target_destination) : "Train to Switch"			// NEEDHELP
@@ -8429,7 +8434,7 @@
 
 @SolidClass base(BaseTrain) = func_tracktrain :
 	"A moving platform that the player can ride. It follows a path of path_track entities.\n" +
-	"NOTE: Build your train so that the front of the train is facing down the X axis. " +
+	"NOTE: Build your train so that the front of the train is facing down the X (red) axis. " +
 	"When it spawns it will automatically rotate to face the next path_track on the path."
 [
 
@@ -8453,7 +8458,7 @@
 
 @SolidClass base(BaseTrain) = func_tanktrain :
 	"A moving train that follows a path of path_track entities, shoots at the player, and can be killed.\n" + 
-	"NOTE: Build your train so that the front of the train is facing down the X axis. " +
+	"NOTE: Build your train so that the front of the train is facing down the X (red) axis. " +
 	"When it spawns it will automatically rotate to face the next path_track on the path."
 [
 	health(integer) : "Health" : 100
