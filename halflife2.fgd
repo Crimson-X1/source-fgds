@@ -237,6 +237,8 @@
 [
 	output OnBallReinserted(void) : "Fired when a combine ball is reinserted into the field (only gets triggered when Combine Power supply is checked)"
 	output OnLastBallGrabbed(void) : "Fired when the last combine ball is grabbed from the field by a mega physcannon"
+
+	input Destroy(void) : "Releases all balls from the spawner as if they were punted out by the gravity gun."
 ]
 
 @PointClass base(CombineBallSpawners, Parentname) = point_combine_ball_launcher :
@@ -393,6 +395,7 @@
 	output OnDeploy(void) : "Turret is becoming active and dangerous."
 	output OnRetire(void) : "Turret is becoming inactive and harmless."
 	output OnTipped(void) : "Turret has been tipped over and is inactive."
+	output OnStartTipped(void) : "Turret has just been tipped over."
 	output OnPhysGunPickup(void) : "Picked up with physgun"
 	output OnPhysGunDrop(void) : "Released by physgun"
 ]
@@ -1410,6 +1413,7 @@
 		0 : "Normal headcrabs"
 		1 : "Fast Headcrabs"
 		2 : "Poison Headcrabs"
+		-1 : "Random"
 	]
 	HeadcrabCount(integer) : "Headcrab count" : 6 : "Number of headcrabs to spawn on impact"
 	FlightSpeed(float) : "Flight Speed" : 3000  : "Speed to fly through the air"
@@ -1649,14 +1653,21 @@
 	]
 ]
 
-@PointClass base(Targetname, Parentname) iconsprite("editor/info_target.vmt")  = info_target_helicopter_crash : "Helicopter Crash Target"
-[
-]
-
-@PointClass base(Targetname, Parentname) iconsprite("editor/info_target.vmt")  = info_target_gunshipcrash : "Gunship Crash Target"
+@BaseClass = CrashPoint
 [
 	input Enable(void) : "Enable the crash target."
 	input Disable(void) : "Disable the crash target."
+
+	output OnCrashed(void)  : "Fires when the aircraft crashes on this point."
+	output OnBeginCrash(void)  : "Fires when the aircraft begins navigating to this point."
+]
+
+@PointClass base(Targetname, Parentname, CrashPoint) iconsprite("editor/info_target.vmt")  = info_target_helicopter_crash : "Helicopter Crash Target"
+[
+]
+
+@PointClass base(Targetname, Parentname, CrashPoint) iconsprite("editor/info_target.vmt")  = info_target_gunshipcrash : "Gunship Crash Target"
+[
 ]
 
 @NPCClass base(BaseHelicopter) studio("models/combine_dropship.mdl" ) = npc_combinedropship : "Combine Dropship"
@@ -1772,6 +1783,30 @@
 		1 : "Yes"
 	]
 
+	IdleAimAround(choices) : "Aim around while idle" : "No" : "If enabled, this helicopter will aim its gun in random locations while searching for enemies without changing the helicopter's overall facing direction. If there are any visually interesting info_hints nearby, the helicopter will aim at them. Intended for use with a spotlight." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	DisableSmokeTrails(choices) : "Disable Smoke Trails" : "No" : "Stops smoke trails from appearing while the helicopter is damaged." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	DisableCorpses(choices) : "Disable Corpses" : "No" : "Stops corpses from falling when the helicopter is damaged." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	DisableExplosions(choices) : "Disable Explosions" : "No" : "Stops explosions from occuring when the helicopter is damaged." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
 	// Inputs
 	input GunOn(void) : "GunOn"
 	input GunOff(void) : "GunOff"
@@ -1811,6 +1846,8 @@
 
 	input StartCarpetBombing(void) : "Starts the helicopter constantly dropping megabombs until StopCarpetBombing input"
 	input StopCarpetBombing(void) : "Stop the carpet bombing behavior"
+
+	input SelfDestructNoFX(void) : "Identical to SelfDestruct, except the helicopter won't throw out chunks while flying to a crash point. If there are no crash points, the helicopter will explode in place as normal. Intended for when the pilot is killed and there's not supposed to be anything wrong with the helicopter itself."
 
 	// Outputs
 	output OnHealthChanged(integer) : "Fires when the helicopter health changes. The integer is the percentage of health the chopper has from 0-100."
@@ -1868,7 +1905,11 @@
 	spawnflags(Flags) = 
 	[
 		32768 :  "[32768] Never turn into a torso" : 0
+		65536 :  "[65536] Never release headcrab" : 0
 	]
+
+	MaxDistToSwat(float) : "Max Distance to Swat Props" : : "Overrides the maximum distance in which this zombie should be able to swat props at enemies. Default is 1000"
+	MaxObjMassToSwat(float) : "Max Object Mass to Swat" : : "Overrides the maximum mass this zombie should consider when choosing props to swat. Default is 60"
 
 	output OnSwattedProp(ehandle) : "Fires when this NPC swats a prop, passing the prop as the activator and parameter."
 	output OnCrab(ehandle) : "Fires when the zombie releases a headcrab, passing the headcrab as the activator and parameter."
@@ -1886,10 +1927,12 @@
 
 @NPCClass base(BaseZombie) studio("models/Zombie/Classic.mdl") = npc_zombie : "Zombie"
 [
+	MeleeReach(float) : "Melee Reach" : : "Overrides the maximum distance in which this zombie should be able to swat at enemies. Default is 55"
 ]
 
 @NPCClass base(BaseZombie) studio("models/Zombie/Classic_torso.mdl") = npc_zombie_torso : "Zombie Torso"
 [
+	MeleeReach(float) : "Melee Reach" : : "Overrides the maximum distance in which this zombie should be able to swat at enemies. Default is 55"
 ]
 
 // CUSTOM ZOMBIES
@@ -2360,13 +2403,23 @@
 	
 	additionalequipment(choices) : "Weapons" : "0" =
 	[
+//		"weapon_pistol" : "Pistol"
+//		"weapon_ar2" : "AR2"
+//		"weapon_shotgun" : "Shotgun"
+//		"weapon_smg1" : "SMG1"
+//		"weapon_stunstick" : "Stun Stick"
+//		"weapon_annabelle"	:"Grigori's Shotgun"
+//		"weapon_rpg" : "RPG"
+//		"0" : "Nothing"
 		"weapon_pistol" : "Pistol"
+		"weapon_357" : ".357 Magnum"
 		"weapon_ar2" : "AR2"
 		"weapon_shotgun" : "Shotgun"
 		"weapon_smg1" : "SMG1"
 		"weapon_stunstick" : "Stun Stick"
-		"weapon_annabelle"	:"Grigori's Shotgun"
 		"weapon_rpg" : "RPG"
+		"weapon_crossbow" : "Crossbow"
+		"weapon_annabelle"	:"Grigori's Shotgun"
 		"0" : "Nothing"
 	]
 ]
@@ -2499,6 +2552,7 @@
 	input BeginSequence(void) : "Summons an NPC to act out the scripted sequence."
 	input MoveToPosition(void) : "Summons an NPC to the script location. They will play their scripted idle (or ACT_IDLE if none is specified) until BeginSequence is triggered."
 	input CancelSequence(void) : "Stops the scripted sequence. If fired after a sequence starts, this input will not take effect until the NPC finishes playing the scripted action animation."
+	input StopActionLoop(void) : "Stops looping the action animation if it is specified to loop."
 	input SetTarget(target_destination) : "Sets the target NPC."
 
 	// Outputs
@@ -4214,6 +4268,16 @@
 	input SetHealthAmount(float) : "Sets the amount of health this item gives."
 ]
 
+@PointClass base(Item, Studiomodel) studioprop() = item_battery_custom : "Custom Battery"
+[
+	model(studio) : "Model" : "models/items/battery.mdl" : "The battery's model."
+	PowerAmount(float) : "Power Amount" : "15" : "The amount of power this item gives."
+	//TouchSound(sound) : "Touch Sound" : "ItemBattery.Touch" : "The sound to make when this item is picked up and used."
+	
+	// Inputs
+	input SetPowerAmount(float) : "Sets the amount of power this item gives."
+]
+
 @PointClass base(Targetname, Parentname, Angles, RenderFields, BaseFadeProp) studio("models/items/ammocrate_empty.mdl") = item_ammo_crate : "Ammo Crate"
 [
 	AmmoType(choices) : "Ammo Type" : 0 =
@@ -4653,6 +4717,7 @@
 	// Inputs
 	input Start(void) : "Starts playback of the scene file"
 	input Pause(void) : "Pauses playback of the scene file"
+	input PauseAtLastInterrupt(void) : "Pauses playback of the scene and rewinds it to the last interrupt event in the scene."
 	input Resume(void) : "Resumes playback of the scene if it has been paused"
 	input Cancel(void) : "Cancels playback of the scene"
 	input CancelAtNextInterrupt(void) : "Cancels playback of the scene at the next interrupt event in the scene."
@@ -5689,12 +5754,12 @@
 	]
 ]
 
-@PointClass base(Targetname, Angles) studio("models/props_combine/coreball.mdl") = prop_coreball: "Core Ball" 
-[
-	input SetScaleX(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
-	input SetScaleY(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
-	input SetScaleZ(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
-]
+//@PointClass base(Targetname, Angles) studio("models/props_combine/coreball.mdl") = prop_coreball: "Core Ball" 
+//[
+//	input SetScaleX(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
+//	input SetScaleY(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
+//	input SetScaleZ(vector) : "Scales the coreball in one Axis. Params: <New Size> <Time>"
+//]
 
 @PointClass base(Targetname, Studiomodel, Angles, RenderFields) studioprop() = prop_scalable : "Scalable Prop" 
 [

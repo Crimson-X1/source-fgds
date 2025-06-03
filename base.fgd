@@ -9,6 +9,9 @@
 
 @mapsize(-16384, 16384)
 
+
+
+
 @AutoVisGroup = "Entities"
 [
     "Cubemaps"
@@ -1302,6 +1305,8 @@
 		0 : "Advisor Stun"
 		1 : "Intro Blur"
 		2 : "Groggy Vision"
+		100 : "Chromatic Blur (Mapbase)"
+		101 : "Chromatic Aberration (Mapbase)"
 	]
 
 	// Inputs
@@ -1632,7 +1637,7 @@
 	_minlight(string) : "Minimum Light Level" : : "The minimum level of ambient light that hits this brush."
 ]
 
-@SolidClass base(Targetname, EnableDisable) = func_clip_vphysics : 
+@SolidClass base(Targetname, Parentname, EnableDisable) = func_clip_vphysics : 
 	"A brush entity that's considered solid to vphysics." 
 [
 	filtername(filterclass) : "Filter Name" : : "Filter to use to see if activator collides with me. See filter_activator_name for more explanation. Allow means 'Allow to Block' for this entity."
@@ -2305,7 +2310,7 @@
 ]
 
 @PointClass base(Targetname, Parentname, RenderFxChoices) iconsprite("editor/env_laser.vmt") line(255 255 255, targetname, LaserTarget) = env_laser : 
-	"An entity that creates a laser beam between itself and a given target. Unlike env_beam, the laser is affected by collisions."
+	"An entity that creates a laser beam between itself and a given target. It is affected by collisions, unlike env_beam."
 [
 	LaserTarget(target_destination) : "Target of Laser" : : "Name of entity, or entities, to strike at. The target is randomly chosen if there are multiple entities matching the given name."
 	renderamt(integer) : "Brightness (1 - 255)" : 100
@@ -2939,13 +2944,57 @@
 	input SetRPCDetails(string) : "Sets the RPC details."
 ]
 
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = skybox_swapper : 
-	"An entity that swaps skybox textures." 
+@PointClass base(Targetname) iconsprite("editor/game_menu.vmt") = game_menu : 
+	"An entity that opens number menus." 
 [
-	SkyboxName(string) : "Sky Name" : "" : "The name of the sky texture to change to."
+	spawnflags(flags) =
+	[
+		1: "[1] All Players" : 0
+	]
 	
-	input Trigger(void) : "Causes the current sky texture to change to the one specified in this entity."
+	holdtime(float) : "Hold Time" : "5.0" : "The time the menu should stay onscreen if the player doesn't select an option. The OnTimeout output will be fired if this happens. Specify '-1' for infinite hold time."
+	
+	Title(string) : "Title" : : "If specified, this will be placed above all of the options. Localization is supported."
+	
+	Case01(string) : "Case 01" : : "If specified, this will be the 1st option in the menu. Localization is supported."
+	Case02(string) : "Case 02" : : "If specified, this will be the 2nd option in the menu. Localization is supported."
+	Case03(string) : "Case 03" : : "If specified, this will be the 3rd option in the menu. Localization is supported."
+	Case04(string) : "Case 04" : : "If specified, this will be the 4th option in the menu. Localization is supported."
+	Case05(string) : "Case 05" : : "If specified, this will be the 5th option in the menu. Localization is supported."
+	Case06(string) : "Case 06" : : "If specified, this will be the 6th option in the menu. Localization is supported."
+	Case07(string) : "Case 07" : : "If specified, this will be the 7th option in the menu. Localization is supported."
+	Case08(string) : "Case 08" : : "If specified, this will be the 8th option in the menu. Localization is supported."
+	Case09(string) : "Case 09" : : "If specified, this will be the 9th option in the menu. Localization is supported."
+	Case10(string) : "Case 10 (0)" : : "If specified, this will be the 0th option in the menu. Localization is supported."
+
+	// Inputs
+	input ShowMenu(void) : "Shows the menu to the player."
+	input HideMenu(void) : "Hides the menu from the player."
+	
+	// Outputs
+	output OnCase01(void) : "Fired when a player selects this option."
+	output OnCase02(void) : "Fired when a player selects this option."
+	output OnCase03(void) : "Fired when a player selects this option."
+	output OnCase04(void) : "Fired when a player selects this option."
+	output OnCase05(void) : "Fired when a player selects this option."
+	output OnCase06(void) : "Fired when a player selects this option."
+	output OnCase07(void) : "Fired when a player selects this option."
+	output OnCase08(void) : "Fired when a player selects this option."
+	output OnCase09(void) : "Fired when a player selects this option."
+	output OnCase10(void) : "Fired when a player selects this option."
+	output OutValue(integer) : "Fired when a player selects any option, using the selected option as a parameter."
+	
+	output OnTimeout(void) : "Fired when a player doesn't select an option in time."
 ]
+
+// Hidden for now due to not functioning in Source 2013
+//@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = skybox_swapper : 
+//	"An entity that swaps skybox textures." 
+//[
+//	SkyboxName(string) : "Sky Name" : "" : "The name of the sky texture to change to."
+//	
+//	input Trigger(void) : "Causes the current sky texture to change to the one specified in this entity."
+//]
 
 @PointClass base(Parentname, Angles) size(-2 -2 -2, 2 2 2) = point_enable_motion_fixup : 
 	"An entity used to move a motion-disabled prop when it enables motion. Parent this entity to the prop, and when the prop has its motion enabled, it will immediately teleport to the origin of this entity."
@@ -3027,6 +3076,12 @@
 	[
 		1 :  "[1] Start On" : 1
 		2 :  "[2] No Dynamic Light" : 1
+	]
+
+	IgnoreSolid(choices) : "Ignore Solid" : 0 : "If set, this spotlight won't trace for solids." =
+	[
+		0 : "No"
+		1 : "Yes"
 	]
 
 	spotlightlength(integer) : "Spotlight Length" : 500 : "Length of the spotlight beam."
@@ -4501,11 +4556,10 @@
 	spawnflags(flags) =
 	[
 		//1 : "[1] Starts Open - OBSOLETE, use 'Spawn Position' key instead" : 0
-		// Changed default spawnflags - '[1024] Touch Opens' was previously enabled, and '[256] Use Opens' was disabled.
 		4 : "[4] Non-solid to Player" : 0
 		8: "[8] Passable" : 0
 	    32: "[32] Toggle" : 0
-		256:"[256] Use Opens" : 1
+		256:"[256] Use Opens" : 0
 		512: "[512] NPCs Can't" : 0
 		1024: "[1024] Touch Opens" : 0
 		2048: "[2048] Starts locked" : 0
@@ -4694,6 +4748,11 @@
 	input DisallowPlayerUse(void) : "Prevents players from using the door. This just enables the 'Ignore player +USE' spawnflag."
 	
 	input SetDoorFilter(target_destination) : "Sets the entity to use as the NPC filter. Pass in an empty string to clear the NPC filter."
+	input SetFullyOpenSound(string) : "Sets the sound to use when the door is fully open."
+	input SetFullyClosedSound(string) : "Sets the sound to use when the door is fully closed."
+	input SetMovingSound(string) : "Sets the sound to use when the door is moving."
+	input SetLockedSound(string) : "Sets the sound to use when the door is locked."
+	input SetUnlockedSound(string) : "Sets the sound to use when the door is unlocked."
 ]
 
 
@@ -7413,6 +7472,7 @@
 	output OnMotionEnabled(void) : "Fired when motion is enabled due to damage/physcannon/force."
 	output OnPhysGunPickup(void) : "Fired when a player picks this object up, either with the physgun or +USE."
 	output OnPhysGunPunt(void) : "Fired when a player punts this object with the physgun."
+	output OnPhysGunPull(void) : "Fired when a player pulls this object with the physgun."
 	output OnPhysGunOnlyPickup(void) : "Fired when a player picks this object up WITH THE PHYSGUN. +USE pickups do not fire this output."
 	output OnPhysGunDrop(void) : "Fired when a player drops this object."
 	output OnPlayerUse(void) : "Fired when the player tries to +USE the physbox. This output will fire only if the Generate output on +USE spawnflag is set."
@@ -8037,32 +8097,43 @@
 	puntsound(sound) : "Sound to make when punted"
 	
 	// Custom keyfields
-	mlDissolvable(choices) : "Dissolvable?" : 1 : "Sets whether the prop can be vaporized. Only relevant for custom map logic." =
+	mlDissolvable(choices) : "Dissolvable?" : 1 : "Determines if this object can be vaporized. Only relevant for custom map logic." =
 	[
 		0: "False"
 		1: "True"
 	]
-	mlMetallic(choices) : "Is Metallic" : 0 : "Sets whether this object is affected by magnets. Only relevant for custom map logic." =
+	mlMetallic(choices) : "Has magnetic properties?" : 0 : "Sets whether this object has magnetic properties. Only relevant for custom map logic." =
+	[
+		0: "0: None"
+		1: "1: Positive Charge"
+		2: "2: Negative Charge"
+	]
+	mlAntigravity(choices) : "Affected by anti-gravity?" : 1 : "Is this object affected by anti-grav fields? Only relevant for custom map logic." =
 	[
 		0: "False"
 		1: "True"
 	]
-	mlAntigravity(choices) : "Affected by anti-gravity?" : 1 : "Sets whether this prop can become weightless. Only relevant for custom map logic." =
+	mlTeleportable(choices) : "Can Teleport?" : 1 : "Determines if this object can be teleported. Only relevant for custom map logic." =
 	[
 		0: "False"
 		1: "True"
 	]
-	mlTeleportable(choices) : "Teleportable?" : 1 : "Can this prop be teleported? Only relevant for custom map logic." =
+	mlVacuum(choices) : "Affected by vac-tubes?" : 1 : "Sets whether this object is affected by vac-tubes. Only relevant for custom map logic." =
 	[
 		0: "False"
 		1: "True"
 	]
-	mlVacuum(choices) : "Affected by vac-tubes?" : 1 : "Sets whether this prop is affected by vac-tubes. Only relevant for custom map logic." =
+	// Would it be better to make a custom entity? Something like "prop_energy_cell"?
+	// Properties could include: "Battery Type", "Power Level", 
+	mlBatteryType(choices) : "Is Energy Source?" : 0 : "Can this object store and release energy? If yes, then what kind of battery? Only relevant for custom map logic." =
 	[
-		0: "False"
-		1: "True"
+		0: "0: No"
+		1: "1: Generic"
+		2: "2: Battery"
+		3: "3: Industrial Battery"
+		4: "4: Combine Power Cell"
+		5: "5: Xen Crystal"
 	]
-
 	// mlKeycard(choices) : "Keycard Type" : 0 : "Sets whether this object is a keycard. Only relevant for custom map logic." = 
 	// [
 		// 0: "None"
@@ -8180,6 +8251,8 @@
 		32768 : "[32768] Allow stretch" : 0
 		65536 : "[65536] Start asleep" : 0
 		131072 : "[131072] Fixed constraints (make statue)" : 0
+		262144 : "[262144] Allow +USE" : 0
+		524288 : "[524288] Prevent pickup (if +USE is enabled)" : 0
 	]
 	angleOverride(string) : "Override Animation" : "" : "Filled in by the engine via wc_update_entity, do not edit by hand except to clear."
 
@@ -8189,6 +8262,10 @@
 	input EnableMotion(void) : "Enable physics motion/collision response."
 	input DisableMotion(void) : "Disable physics motion/collision response."
 	input FadeAndRemove(float) : "Fade out then remove (kill) self. Parameter override = duration of fade"
+	input AddToLRU(void) : "Adds the ragdoll to the cleanup list (ragdoll will fade out when it's the least recently used)"
+	input RemoveFromLRU(void) : "Removes the ragdoll from the cleanup list, allowing it to exist indefinitely"
+
+	output OnPlayerUse(void) : "Fires when the ragdoll is used, if +USE is enabled."
 ]
 
 @PointClass base(prop_dynamic_base) studioprop() = prop_dynamic_ornament :
@@ -9349,6 +9426,8 @@
 	HandsVM(studio) : "Hands Viewmodel" : : "Custom hands viewmodel. Requires weapon viewmodels that support them."
 	HandsVMSkin(string) : "Hands Viewmodel Skin" : : "Skin for the custom hands viewmodel."
 	HandsVMBody(string) : "Hands Viewmodel Bodygroup" : : "Bodygroup value for the custom hands viewmodel."
+	
+	ProtagonistName(string) : "Protagonist Name" : : "Sets the player to a specific protagonist from scripts/protagonists/protagonists_manifest.txt. [Currently HL2 only]"
 
 	// Outputs
 	output OnFlashlightOn(float) 			: "Fired when the player turns on his flashlight. This output has the value of how much energy the player had when this happened [0..1]."
@@ -9387,7 +9466,9 @@
 	input SetLocatorTargetEntity(target_destination) : "Set the entity that the HUD locator should track. (Usually a vehicle)"
 	
 	input SetMaxInputArmor(integer)			: "Sets the maximum armor value that could be set by armor inputs."
-	input SetSuitZoomFOV(integer)				: "Sets the FOV used by suit zoom."
+	input SetSuitZoomFOV(integer)			: "Sets the FOV used by suit zoom."
+	
+	input SetProtagonist(string)			: "Sets the player's protagonist entry."
 	
 	output OnPlayerSpawn(void) 				: "Fired when the player spawns or respawns, using the spawn point as the caller."
 ]
